@@ -1,35 +1,71 @@
 pipeline {
-    agent any 
+    agent any
     
-    stages{
-        stage("Clone Code"){
-            steps {
-                echo "Cloning the code"
-                git url:"https://github.com/LondheShubham153/django-notes-app.git", branch: "main"
-            }
-        }
-        stage("Build"){
-            steps {
-                echo "Building the image"
-                sh "docker build -t my-note-app ."
-            }
-        }
-        stage("Push to Docker Hub"){
-            steps {
-                echo "Pushing the image to docker hub"
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
-                sh "docker tag my-note-app ${env.dockerHubUser}/my-note-app:latest"
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker push ${env.dockerHubUser}/my-note-app:latest"
+    environment {
+    	image_version="latest" }
+   
+	stages {
+
+	       
+        stage("code"){
+            steps{
+                git url: "https://github.com", branch: "main"
+                echo 'Successfuly fetch the code for central repo '
+        	 }
+         	     }
+        stage("build and test"){
+            steps{
+                sh "docker build -t django-notes ."
+                echo 'Successfull build docker image from the dockerfile'
+                 }
+              		       }  
+     
+        stage("push"){
+            steps{
+                withCredentials([usernamePassword(credentialsId: 'dockerhubid', passwordVariable: 'password', usernameVariable: 'username')]){
+                sh "docker login -u ${env.username} -p ${env.password}"
+                sh "docker tag django-notes ${env.username}/django-notes:latest"
+                sh "docker push ${env.username}/django-notes:latest"
+                echo 'Successfully pushed the image to dockerHub'
                 }
-            }
-        }
-        stage("Deploy"){
-            steps {
-                echo "Deploying the container"
+            	}
+          	     }	
+
+	    
+        stage("deploying with docker compose"){
+	    steps{
                 sh "docker-compose down && docker-compose up -d"
-                
-            }
-        }
-    }
-}
+                echo 'Successfully deployed with docker-compose'
+              }
+         	  }
+        
+		stage("deploying on EKS cluster"){
+            input {
+	          message "should i deploy on cluster??"
+		      ok "yes, Proceed with deployment" }
+	        steps{
+                sh "kubectl apply -f deployment.yml -f service.yml"
+                echo 'Successfully deploy on EKS cluster'
+                 }
+         	}    
+	
+	} //All stages end here
+
+
+    post{
+    	success{ 
+		echo 'successfully docntainerize and deployed the application'
+	       }
+
+	failure{
+		echo 'failed to deploy'
+	       }
+	always{
+		echo 'pipeline execution completed'
+	      }
+
+	}//post build actions ends
+
+	
+}//pipeline execution ends
+

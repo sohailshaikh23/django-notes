@@ -1,0 +1,14 @@
+#this is a load balancer type of Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-notes-service
+  labels: django-notes
+  namespace: django-notes
+spec:
+  type: LoadBalancer
+  selector:
+    app: django-notes
+   ports:
+    - port: 80
+      targetPort: 8000

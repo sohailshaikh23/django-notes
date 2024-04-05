@@ -1,0 +1,15 @@
+# This is pod for todo webapp
+apiVersion: v1
+kind: Pod
+metadata:
+  name: django-notes
+  namespace: django-notes
+  labels:
+    app: django-notes
+
+spec:
+  containers:
+    - name: django-notes
+      image: image
+      ports:
+        - containerPort: 8000
