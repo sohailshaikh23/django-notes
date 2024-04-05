@@ -1,5 +1,6 @@
 version : "3.3"
 services :
+<<<<<<< HEAD
   django-notes :
     container_name: django-notes
     image : app:latest
@@ -11,3 +12,9 @@ services :
 networks:
   webapp:
   
+=======
+  web :
+     image : my-note-app:latest
+     ports :
+         - "8000:8000"
+>>>>>>> fbb67af3e19f6abf32d92cf11b9b1977ef37bf4e
